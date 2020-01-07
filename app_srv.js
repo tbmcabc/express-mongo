@@ -44,6 +44,8 @@ app.get('/about', function (req, res) {
     })
 })
 
+
+
 app.use('/api', require('./router/req'))
 app.use('/api', require('./router/api'))
 
