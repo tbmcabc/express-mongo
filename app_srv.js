@@ -1,5 +1,8 @@
 var express = require('express');
+var http = require('http')
+var cfg = require('./config/config')
 var app = express();
+
 var handlebars = require('express3-handlebars').create({
     defaultLayout: 'main',
     helpers: {
@@ -12,18 +15,20 @@ var handlebars = require('express3-handlebars').create({
         }
     }
 });
-
-
-
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 3000);
 
 app.use(require('body-parser')());
+app.use(require('express-logger')({
+    path: __dirname + '/log/request.log'
+}))
 
 app.use(express.static(__dirname + '/public'));
 app.use(function (req, res, next) {
-    if (!res.locals.partials) res.locals.partials = {};
+    if (!res.locals.partials) {
+        res.locals.partials = {};
+    }
     res.locals.partials.weather = getWeatherData();
     next();
 });
@@ -39,32 +44,9 @@ app.get('/about', function (req, res) {
     })
 })
 
-app.get('/newsletter', function (req, res) {
-    // 我们会在后面学到CSRF……目前，只提供一个虚拟值
-    res.render('newsletter', {
-        csrf: 'CSRF token goes here'
-    });
-});
-// app.post('/process', function (req, res) {
-//     // 这里通过 req.query 和 req.body出来表单数据
-//     console.log('Form (from querystring): ' + req.query.form);
-//     console.log('CSRF token (from hidden form field): ' + req.body._csrf);
-//     console.log('Name (from visible form field): ' + req.body.name);
-//     console.log('Email (from visible form field): ' + req.body.email);
-//     // 这里303重定向到/thank-you 页面
-//     res.redirect(303, '/thank-you');
-// });
+app.use('/api', require('./router/req'))
+app.use('/api', require('./router/api'))
 
-app.post('/process', function(req, res){
-    // 这里用于判断如果是一个ajax请求着去处理，否则重定向到/thank-you
-    if(req.xhr || req.accepts('json,html')==='json'){
-        // 如果发生错误，应该发送 { error: 'error description' }
-        res.send({ success: true });
-    } else {
-        // 如果发生错误，应该重定向到错误页面
-        res.redirect(303, '/thank-you');
-    }
-});
 
 //404
 app.use(function (req, res) {
@@ -79,9 +61,22 @@ app.use(function (err, req, res, next) {
     res.render('500')
 })
 
-app.listen(app.get('port'), function () {
-    console.log('Express started on http://localhost:' + app.get('port') + ';press ctrl-c to terminate');
-})
+// app.listen(app.get('port'), function () {
+//     console.log('Express started on http://localhost:' + app.get('port') + ';press ctrl-c to terminate');
+// })
+
+app.start = function () {
+    let http_srv = http.createServer(app);
+    http_srv.listen(cfg.port);
+    http_srv.on('listening', function () {
+        var addr = http_srv.address();
+        var bind = typeof addr === 'string' ?
+            'pipe ' + addr :
+            'port ' + addr.port;
+        console.log("srv start at:" + bind)
+    })
+
+};
 
 var fortunes = [
     "Conquer your fears or they will conquer you.",
@@ -117,3 +112,6 @@ function getWeatherData() {
         ],
     };
 }
+
+
+module.exports = app;
