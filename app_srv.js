@@ -78,6 +78,8 @@ app.start = function () {
         console.log("srv start at:" + bind)
     })
 
+    this.timecount = 0;
+
 };
 
 var fortunes = [
@@ -113,6 +115,11 @@ function getWeatherData() {
             },
         ],
     };
+}
+
+app.timerfun = function () {
+    this.timecount++;
+    console.log(this.timecount)
 }
 
 
