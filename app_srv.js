@@ -2,7 +2,7 @@ var express = require('express');
 var http = require('http')
 var cfg = require('./config/config')
 var app = express();
-var io = require('./utils/socket_srv')
+var socketio = require('./utils/socket_srv')
 
 
 var handlebars = require('express3-handlebars').create({
@@ -72,7 +72,8 @@ app.use(function (err, req, res, next) {
 app.start = function () {
     this.timecount = 0;
     let http_srv = http.createServer(app);
-    io.getSocketio(http_srv)
+    this.io = new socketio()
+    this.io.getSocketio(http_srv)
     http_srv.listen(cfg.port);
     http_srv.on('listening', function () {
         var addr = http_srv.address();
@@ -124,8 +125,14 @@ function getWeatherData() {
 app.timerfun = function () {
     this.timecount++;
     if (this.timecount % 5 == 0) {
-        io.sayHello("当前在线人数:" + io.checkClientCount())
+        this.io.sayHello("当前在线人数:" + this.io.checkClientCount())
+
     }
+    if (this.timecount % 2 == 0) {
+        console.log("当前服务器连接人数" + this.io.checkClientCount())
+
+    }
+    
 
 }
 
