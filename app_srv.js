@@ -123,7 +123,10 @@ function getWeatherData() {
 
 app.timerfun = function () {
     this.timecount++;
-    console.log(this.timecount)
+    if (this.timecount % 5 == 0) {
+        io.sayHello("当前在线人数:" + io.checkClientCount())
+    }
+
 }
 
 

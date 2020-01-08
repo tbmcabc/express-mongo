@@ -1,39 +1,42 @@
-var socket_io = require('socket.io')
-
+var WebSocket = require('ws')
+const url = require('url');
 var socketio = {};
+var clientarr = []
 
 // 获取io
 
 socketio.getSocketio = function (server) { // http(s) server
 
-    var io = socket_io.listen(server);
+    this.wss = new WebSocket.Server({
+        server
+    });
 
-    io.sockets.on('connection', function (socket) {
+    this.wss.on('connection', function connection(ws, req) {
+        const location = url.parse(req.url, true);        
+        // You might use location.query.access_token to authenticate or share sessions
+        // or req.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
+        clientarr.push(ws)
+        ws.on('message', function incoming(message) {
+            console.log('received: %s', message);
+            ws.send(message);
+        });
 
-        console.log('连接成功');
+        ws.send('something');
+    });
+};
 
-        socket.on('event01', function () { // 处理来自客户端的’event01’事件
 
-            console.log('监听点击事件');
+socketio.sayHello = function (msg) {
 
-            var datas = [1, 2, 3, 4, 5];
+    this.wss.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(msg);
+        }
+    });
+};
 
-            socket.emit('event02', {
-                datas: datas
-            }); // 给该客户端发送event02事件
-
-            socket.broadcast.emit('event02', {
-                datas: datas
-            }); // 发送给其它客户端
-
-        })
-
-        // 更多事件，就更多处理函数
-
-        // ......
-
-    })
-
+socketio.checkClientCount = function () {        
+    return clientarr.length;
 };
 
 module.exports = socketio;
