@@ -2,6 +2,7 @@ var express = require('express');
 var http = require('http')
 var cfg = require('./config/config')
 var app = express();
+var io = require('./utils/socket_srv')
 
 
 var handlebars = require('express3-handlebars').create({
@@ -70,26 +71,16 @@ app.use(function (err, req, res, next) {
 
 app.start = function () {
     this.timecount = 0;
-    let http_srv = http.Server(app);
-    var io = require('socket.io')(http_srv)
-    io.on('connection', (socket) => {
-        console.log('和客户端建立连接' + socket.id)
-        // io.emit 广播 群聊 给所有在线的人发消息
-        // socket.emit 谁给我发的消息 返回消息给谁,智能机器人的实现
-        //监听客户端发来的消息
-        socket.on('message', (data) => {
-            console.log(data)
-            io.emit('server-message', data) // 服务器给客户端发送数据 在线聊天室
-        })
-    })
+    let http_srv = http.createServer(app);
+    io.getSocketio(http_srv)
     http_srv.listen(cfg.port);
-    // http_srv.on('listening', function () {
-    //     var addr = http_srv.address();
-    //     var bind = typeof addr === 'string' ?
-    //         'pipe ' + addr :
-    //         'port ' + addr.port;
-    //     console.log("srv start at:" + bind)
-    // })
+    http_srv.on('listening', function () {
+        var addr = http_srv.address();
+        var bind = typeof addr === 'string' ?
+            'pipe ' + addr :
+            'port ' + addr.port;
+        console.log("srv start at:" + bind)
+    })
 
 
 
