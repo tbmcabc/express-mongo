@@ -18,4 +18,12 @@ router.get('/c2s_test', function (req, res, next) {
     })
 })
 
+router.get('/c2s_getcount', function (req, res, next) {
+    console.log(req.url)
+    res.json({
+        code: "0",
+        count: global.app.timecount
+    })
+})
+
 module.exports = router

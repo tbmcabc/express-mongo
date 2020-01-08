@@ -3,6 +3,7 @@ var http = require('http')
 var cfg = require('./config/config')
 var app = express();
 
+
 var handlebars = require('express3-handlebars').create({
     defaultLayout: 'main',
     helpers: {
@@ -68,17 +69,27 @@ app.use(function (err, req, res, next) {
 // })
 
 app.start = function () {
-    let http_srv = http.createServer(app);
-    http_srv.listen(cfg.port);
-    http_srv.on('listening', function () {
-        var addr = http_srv.address();
-        var bind = typeof addr === 'string' ?
-            'pipe ' + addr :
-            'port ' + addr.port;
-        console.log("srv start at:" + bind)
-    })
-
     this.timecount = 0;
+    let http_srv = http.createServer(app);
+    var io = require('socket.io')(http_srv)
+    io.on("connection", function (socket) {
+        console.log("链接成功")
+        socket.on("chat", function (msg) {
+            //把接收到的msg原样广播
+            console.log(msg);
+            io.emit("chat", msg); //要是socket就是点对点
+        });
+    });
+    http_srv.listen(cfg.port);
+    // http_srv.on('listening', function () {
+    //     var addr = http_srv.address();
+    //     var bind = typeof addr === 'string' ?
+    //         'pipe ' + addr :
+    //         'port ' + addr.port;
+    //     console.log("srv start at:" + bind)
+    // })
+
+
 
 };
 
