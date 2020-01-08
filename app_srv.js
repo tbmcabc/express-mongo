@@ -70,16 +70,18 @@ app.use(function (err, req, res, next) {
 
 app.start = function () {
     this.timecount = 0;
-    let http_srv = http.createServer(app);
+    let http_srv = http.Server(app);
     var io = require('socket.io')(http_srv)
-    io.on("connection", function (socket) {
-        console.log("链接成功")
-        socket.on("chat", function (msg) {
-            //把接收到的msg原样广播
-            console.log(msg);
-            io.emit("chat", msg); //要是socket就是点对点
-        });
-    });
+    io.on('connection', (socket) => {
+        console.log('和客户端建立连接' + socket.id)
+        // io.emit 广播 群聊 给所有在线的人发消息
+        // socket.emit 谁给我发的消息 返回消息给谁,智能机器人的实现
+        //监听客户端发来的消息
+        socket.on('message', (data) => {
+            console.log(data)
+            io.emit('server-message', data) // 服务器给客户端发送数据 在线聊天室
+        })
+    })
     http_srv.listen(cfg.port);
     // http_srv.on('listening', function () {
     //     var addr = http_srv.address();
