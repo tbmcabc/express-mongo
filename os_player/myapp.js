@@ -10,7 +10,7 @@ class MyApp {
         //redis switch
         if (this.cfg.connectredis) {
             console.log("连接redis 配置" + JSON.stringify(this.cfg.rediscfg))
-            var RedisManager = require('./utils/redis_cli')
+            var RedisManager = require('../utils/redis_cli')
             let redis = new RedisManager(this.cfg.rediscfg, app);
         } else {
             console.log("不使用redis")

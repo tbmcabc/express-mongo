@@ -2,10 +2,10 @@ var express = require('express');
 var http = require('http')
 var cfg = require('./config/config')
 var app = express();
-var socketio = require('./utils/socket_srv')
+var socketio = require('../utils/socket_srv')
 
-global.logger = require('./utils/log4js').logger;
-httpLogger = require('./utils/log4js').httpLogger;
+global.logger = require('../utils/log4js').logger;
+httpLogger = require('../utils/log4js').httpLogger;
 
 app.use(httpLogger);
 
@@ -39,35 +39,6 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.get('/', function (req, res) {
-    res.render('home')
-})
-
-app.get('/about', function (req, res) {
-    var randomfor = fortunes[Math.floor(Math.random() * fortunes.length)];
-    res.render('about', {
-        fortune: randomfor
-    })
-})
-
-var routers = require('./router/index')
-routers(app)
-
-
-
-//404
-app.use(function (req, res) {
-    res.status(404);
-    res.render('404')
-})
-
-//500
-app.use(function (err, req, res, next) {
-    console.error(err.stack);
-    res.status(500);
-    res.render('500')
-})
-
 // app.listen(app.get('port'), function () {
 //     console.log('Express started on http://localhost:' + app.get('port') + ';press ctrl-c to terminate');
 // })
@@ -78,16 +49,6 @@ app.start = function () {
     this.io = new socketio()
     this.io.getSocketio(http_srv)
     http_srv.listen(cfg.port);
-    http_srv.on('listening', function () {
-        var addr = http_srv.address();
-        var bind = typeof addr === 'string' ?
-            'pipe ' + addr :
-            'port ' + addr.port;
-        console.log("srv start at:" + bind)
-    })
-
-
-
 };
 
 var fortunes = [
