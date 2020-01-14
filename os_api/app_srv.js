@@ -24,12 +24,11 @@ var handlebars = require('express3-handlebars').create({
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 3000);
-
 app.use(require('body-parser')());
 
-app.use(require('express-logger')({
-    path: __dirname + '/log/request.log'
-}))
+// app.use(require('express-logger')({
+//     path: __dirname + '/log/request.log'
+// }))
 
 app.use(express.static(__dirname + '/public'));
 app.use(function (req, res, next) {

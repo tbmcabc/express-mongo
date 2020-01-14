@@ -1,0 +1,15 @@
+<!-- 段落部分-head -->
+{{#section 'head'}}
+    <!-- we want Google to ignore this page -->
+    <meta name="robots" content="noindex">
+{{/section}}
+<!-- 视图部分 -->
+<h1>Test Page</h1>
+<p>We're testing some jQuery stuff.</p>
+
+<!-- 段落部分-jquery -->
+{{#section 'jquery'}}
+        $('document').ready(function(){
+            $('h1').html('jQjery Works');               
+        });
+{{/section}}
