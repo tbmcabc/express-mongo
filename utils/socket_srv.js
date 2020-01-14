@@ -10,7 +10,7 @@ class socketio {
         let self = this;
         this.wss = new WebSocket.Server({
             server
-        });
+        }); 
 
         this.wss.on('connection', function connection(ws, req) {
 

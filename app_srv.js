@@ -46,10 +46,9 @@ app.get('/about', function (req, res) {
     })
 })
 
+var routers = require('./router/index')
+routers(app)
 
-
-app.use('/api', require('./router/req'))
-app.use('/api', require('./router/api'))
 
 
 //404
@@ -132,7 +131,7 @@ app.timerfun = function () {
         console.log("当前服务器连接人数" + this.io.checkClientCount())
 
     }
-    
+
 
 }
 
