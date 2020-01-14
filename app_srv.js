@@ -4,6 +4,10 @@ var cfg = require('./config/config')
 var app = express();
 var socketio = require('./utils/socket_srv')
 
+global.logger = require('./utils/log4js').logger;
+httpLogger = require('./utils/log4js').httpLogger;
+
+app.use(httpLogger);
 
 var handlebars = require('express3-handlebars').create({
     defaultLayout: 'main',
@@ -22,6 +26,7 @@ app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 3000);
 
 app.use(require('body-parser')());
+
 app.use(require('express-logger')({
     path: __dirname + '/log/request.log'
 }))
@@ -128,7 +133,7 @@ app.timerfun = function () {
 
     }
     if (this.timecount % 2 == 0) {
-        console.log("当前服务器连接人数" + this.io.checkClientCount())
+        console.log("当前服务器连接人数" + this.io.checkClientCount() + " " + new Date().getTime())
 
     }
 
