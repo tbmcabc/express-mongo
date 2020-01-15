@@ -6,7 +6,7 @@ let router = express.Router();
 router.get('/c2s_register', function (req, res, next) {
     let phone = req.query.phone;
     let secret = req.query.secret;
-    app.redis_cli.hget("register", phone, function (err, result) {
+    myapp.api_redis.evalsha("db_check_register", 0, phone, function (err, result) {
         if (err) {
             res.json({
                 code: 1,
@@ -14,17 +14,21 @@ router.get('/c2s_register', function (req, res, next) {
             })
         } else {
             if (result == null) {
-                app.redis_cli.hset("register", phone, new Date().getTime(), function (err, result) {
-                    app.redis_cli.hlen("register", function (err, len) {
-                        let pid = 100000 + len;
-                        let md5secret = utility.md5(secret)
-                        app.redis_cli.hmset("user_" + phone, "phone", phone, "secret", md5secret, "id", pid)
-                        app.redis_cli.hset("id_phone_map", pid, phone)
+                let md5secret = utility.md5(secret)
+                myapp.api_redis.evalsha("db_player_register", 0, phone, new Date().getTime(), md5secret, function (err, ret) {
+                    if (err) {
+                        // console.log(err)
+                        res.json({
+                            code: 1,
+                            msg: "db server error"
+                        })
+                    } else {
+                        // console.log(result)
                         res.json({
                             code: 0,
                             msg: "注册成功"
                         })
-                    })
+                    }
                 })
             } else {
                 res.json({
@@ -41,7 +45,7 @@ router.get('/c2s_register', function (req, res, next) {
 router.get('/c2s_login', function (req, res, next) {
     let phone = req.query.phone;
     let secret = req.query.secret;
-    app.redis_cli.hget("register", phone, function (err, result) {
+    myapp.api_redis.call("hget", "register", phone, function (err, result) {
         if (err) {
             res.json({
                 code: 1,
@@ -54,26 +58,39 @@ router.get('/c2s_login', function (req, res, next) {
                     msg: "该手机号未注册"
                 })
             } else {
-                app.redis_cli.hget("user_" + phone, "secret", function (err, orgsec) {
-                    if (orgsec == utility.md5(secret)) {
-                        let token = utility.md5(phone + secret + new Date().getTime())
-                        app.redis_cli.hset("user_" + phone, "token", token, function (err, result) {
-                            app.redis_cli.hmget("user_" + phone, "id", function (err, result) {
+
+                myapp.api_redis.evalsha("db_check_player_login", 0, phone, utility.md5(secret), function (err, ret) {
+                    if (err) res.json({
+                        code: 1,
+                        err: "db server error"
+                    })
+                    if (ret != null) {
+                        switch (Number(ret)) {
+                            case 1:
+                                res.json({
+                                    code: 1,
+                                    msg: "没有找到该玩家",
+                                })
+                                break;
+                            case 2:
+                                res.json({
+                                    code: 2,
+                                    msg: "密码错误",
+                                })
+                                break;
+                            default:
+                                let token = utility.md5(phone + secret + new Date().getTime())
+                                myapp.api_redis.call("hset", "user_" + ret, "token", token, function (err, result) {})
                                 res.json({
                                     code: 0,
                                     msg: "登陆成功",
                                     data: {
                                         token: token,
-                                        id: result[0]
+                                        id: ret
                                     }
                                 })
-                            })
-                        })
-                    } else {
-                        res.json({
-                            code: 1,
-                            msg: "密码错误",
-                        })
+                                break;
+                        }
                     }
                 })
             }
