@@ -1,6 +1,10 @@
 const express = require('express')
 var urlencode = require('urlencode')
+var crypto = require('crypto')
 let router = express.Router();
+let recieveid = "ww0d1c5329d824145e"
+let encodingAesKey = "BkkFobAFthA5mU8gfRnMvMBRUMuLRvSybQMNi7fo7IO";
+let token = "RcCeXOhFuQ76AC9HlyWXiTBioampfa";
 
 const aesutil = require('../../utils/aesutil')
 
@@ -50,24 +54,29 @@ router.get('/requestapi', function (req, res, next) {
     let nonce = req.query.nonce
     let str = verifyUrl(msg_signature, timestamp, nonce, echostr)
 
-
+    console.log(str)
     res.send(str)
 })
 
 
 function verifyUrl(msg_signature, timestamp, nonce, echostr) {
-    let str = new Buffer.from('aszrgmMaa9UVZdluGbgJPqXqNnFO6xabTKIJrXRCQPr'+ "=", "base64")
-    let AESKey = str.toString()
-    console.log(AESKey.length)
-    let newEchostr = "";
-    console.log("msg_signature \n" + msg_signature)
-    console.log("echostr \n" + echostr)
-    console.log("timestamp \n" + timestamp)
-    console.log("nonce \n" + nonce)    
-    let randommsg = aesutil.decryption(echostr,str)
-    console.log(randommsg)
+    console.log(encodingAesKey.length)
+    if (encodingAesKey.length != 43) {
+        return "false"
+    }
+    let sha1 = crypto.createHash('sha1')
+    let d1 = sha1.update(token + timestamp + nonce + echostr).digest("hex")
+    console.log("加密的结果：" + d1)
+    if(d1 != msg_signature){
+        return "false"
+    }else{
+        return "true"
+    }
 
-    return newEchostr
+    console.log(msg_signature)
+
+
+    return "newEchostr"
 }
 
 
