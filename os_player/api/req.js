@@ -43,10 +43,13 @@ router.get('/c2s_redisget', function (req, res, next) {
 router.get('/requestapi', function (req, res, next) {    
     let msg_signature = req.query.msg_signature;
     let echostr = req.query.echostr;
-    let timestamp = req.query.timestamp
+    let timestamp = req.query.timestamp;
+    let nonce = req.query.nonce
     console.log(msg_signature)
     console.log(echostr)
     console.log(timestamp)
+    console.log(nonce)
+    
 
     res.send()
 })
