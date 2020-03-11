@@ -5,7 +5,7 @@ class MyApp {
         this.cfg = require('./config/config')
         this.rediscfg = require('../global_cfg/config').REDIS_CFG;
         this.db_api = new RedisManager("os_api", this.rediscfg.db_api, null);
-        this.db_api_sub = new RedisManager("os_api_sub", this.rediscfg.db_api, null);
+        this.db_com = new RedisManager("db_com", this.rediscfg.db_com, null);
     }
 
     lanuch() {
@@ -14,8 +14,6 @@ class MyApp {
 
         this.registerSubcribeEvent()
 
-
-
         if (this.cfg.timeinterval > 0) {
             app.timer = setInterval(() => {
                 if (app.timerfun) {
@@ -23,11 +21,31 @@ class MyApp {
                 }
             }, this.cfg.timeinterval)
         }
+        let self = this
+
+        this.db_com.call("on", "message", function (channel, msg) {
+            self.ReceiveRedisMsg(channel, msg)
+        })
     }
 
     registerSubcribeEvent() {
-        this.db_api_sub.call("SUBSCRIBE", "apichannel")
+        this.db_com.call("SUBSCRIBE", "channelapi2chat")
+        this.db_com.call("SUBSCRIBE", "reply_notify")
     }
+
+    ReceiveRedisMsg(channel, msg) {
+        let key = "on" + channel;
+        let func = this[key]
+        if (func) {
+            func(msg)
+        }
+    }
+
+    on_channelapi2chat(msg) {
+        console.log(msg)
+    }
+
+
 }
 
 module.exports = MyApp;

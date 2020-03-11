@@ -16,4 +16,13 @@ router.get('/c2s_createroom', function (req, res, next) {
     })
 })
 
+router.get('/c2s_trypub', function (req, res, next) {
+
+    myapp.db_com.call("publish","channelapi2chat",JSON.stringify({
+        
+    }))
+})
+
+
+
 module.exports = router
