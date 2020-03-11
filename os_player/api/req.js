@@ -1,4 +1,5 @@
 const express = require('express')
+var urlencode = require('urlencode')
 let router = express.Router();
 
 
@@ -40,7 +41,10 @@ router.get('/c2s_redisget', function (req, res, next) {
     })    
 })
 
-router.get('/requestapi', function (req, res, next) {    
+router.get('/requestapi', function (req, res, next) {   
+    console.log(req) 
+    let newreq = urlencode.decode(req)
+    console.log(newreq)
     let msg_signature = req.query.msg_signature;
     let echostr = req.query.echostr;
     let timestamp = req.query.timestamp;
@@ -49,7 +53,7 @@ router.get('/requestapi', function (req, res, next) {
     console.log(echostr)
     console.log(timestamp)
     console.log(nonce)
-    
+
 
     res.send()
 })

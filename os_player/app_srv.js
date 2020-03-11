@@ -3,6 +3,7 @@ var http = require('http')
 var cfg = require('./config/config')
 var app = express();
 
+
 // global.logger = require('../utils/log4js').logger;
 // httpLogger = require('../utils/log4js').httpLogger;
 
