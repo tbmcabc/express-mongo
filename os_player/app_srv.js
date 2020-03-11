@@ -8,20 +8,20 @@ var app = express();
 
 // app.use(httpLogger);
 
-var handlebars = require('express3-handlebars').create({
-    defaultLayout: 'main',
-    helpers: {
-        section: function (name, options) {
-            if (!this._sections) {
-                this._sections = {};
-            }
-            this._sections[name] = options.fn(this);
-            return null;
-        }
-    }
-});
-app.engine('handlebars', handlebars.engine);
-app.set('view engine', 'handlebars');
+// var handlebars = require('express3-handlebars').create({
+//     defaultLayout: 'main',
+//     helpers: {
+//         section: function (name, options) {
+//             if (!this._sections) {
+//                 this._sections = {};
+//             }
+//             this._sections[name] = options.fn(this);
+//             return null;
+//         }
+//     }
+// });
+// app.engine('handlebars', handlebars.engine);
+// app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 3000);
 app.use(require('body-parser')());
 
@@ -30,6 +30,7 @@ app.use(require('express-logger')({
 }))
 
 app.use(express.static(__dirname + '/public'));
+
 app.use(function (req, res, next) {
     if (!res.locals.partials) {
         res.locals.partials = {};
@@ -38,16 +39,16 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.get('/', function (req, res) {
-    res.render('home')
-})
+// app.get('/', function (req, res) {
+//     res.render('home')
+// })
 
-app.get('/about', function (req, res) {
-    var randomfor = fortunes[Math.floor(Math.random() * fortunes.length)];
-    res.render('about', {
-        fortune: randomfor
-    })
-})
+// app.get('/about', function (req, res) {
+//     var randomfor = fortunes[Math.floor(Math.random() * fortunes.length)];
+//     res.render('about', {
+//         fortune: randomfor
+//     })
+// })
 
 var routers = require('./router/index')
 routers(app)
@@ -57,14 +58,16 @@ routers(app)
 //404
 app.use(function (req, res) {
     res.status(404);
-    res.render('404')
+    // res.render('404')
+    res.send("404")
 })
 
 //500
 app.use(function (err, req, res, next) {
     console.error(err.stack);
     res.status(500);
-    res.render('500')
+    // res.render('500')
+    res.send("500")
 })
 
 // app.listen(app.get('port'), function () {
