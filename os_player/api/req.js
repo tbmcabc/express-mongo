@@ -65,7 +65,11 @@ function verifyUrl(msg_signature, timestamp, nonce, echostr) {
         return "false"
     }
     let sha1 = crypto.createHash('sha1')
-    let d1 = sha1.update(token + timestamp + nonce + echostr).digest("hex")
+    let params = [token,timestamp,nonce,echostr]
+    console.log(params)
+    params.sort()
+    console.log(params)
+    let d1 = sha1.update(params[0]+params[1]+params[2]+params[3]).digest("hex")
     console.log("加密的结果：" + d1)
     if(d1 != msg_signature){
         return "false"
