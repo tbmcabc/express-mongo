@@ -97,13 +97,13 @@ router.post('/requestapi', function (req, res, next) {
                         var resXml
                         if (msg.Content == "排班") {
                             resXml = `<xml>
-                                <ToUserName><![CDATA[${msg.ToUserName}]]></ToUserName>
-                                <FromUserName><![CDATA[${msg.FromUserName}]]></FromUserName>
-                                <CreateTime>${Date.now()}</CreateTime>
-                                <MsgType><![CDATA[${msg.MsgType}]]><MsgType>
-                                <Content><![CDATA[${"66666666"}]]><Content>
-                                <MsgId><![CDATA[${msg.MsgId}]]><MsgId>
-                                <AgentID><![CDATA[${msg.AgentID}]]><AgentID>
+                            <ToUserName><![CDATA[${msg.ToUserName}]]></ToUserName>
+                            <FromUserName><![CDATA[${msg.FromUserName}]]></FromUserName>
+                            <CreateTime>${Date.now()}</CreateTime>
+                            <MsgType><![CDATA[${msg.MsgType}]]><MsgType>
+                            <Content><![CDATA[${"666666666"}]]><Content>
+                            <MsgId>${msg.MsgId}<MsgId>
+                            <AgentID>${msg.AgentID}<AgentID>
                             </xml>`;
                         } else {
                             resXml = `<xml>
@@ -112,10 +112,11 @@ router.post('/requestapi', function (req, res, next) {
                                 <CreateTime>${Date.now()}</CreateTime>
                                 <MsgType><![CDATA[${msg.MsgType}]]><MsgType>
                                 <Content><![CDATA[${"777777"}]]><Content>
-                                <MsgId><![CDATA[${msg.MsgId}]]><MsgId>
-                                <AgentID><![CDATA[${msg.AgentID}]]><AgentID>
+                                <MsgId>${msg.MsgId}<MsgId>
+                                <AgentID>${msg.AgentID}<AgentID>
                             </xml>`;
                         }
+                        console.log(resXml)
                         let result = encryptMsg(resXml)
                         console.log(result)
                         res.send(result)
