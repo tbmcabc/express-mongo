@@ -92,12 +92,14 @@ router.post('/requestapi', function (req, res, next) {
                 }, function (err, realmsg) {
                     if (realmsg) {
                         msg = realmsg.xml;
-                        console.log(msg)
+                        console.log(msg.Content)
                         if (msg.Content == "排班") {
                             let result = encryptMsg("你好")
+                            console.log(result)
                             res.send(result)
                         } else {
                             let result = encryptMsg("我好")
+                            console.log(result)
                             res.send(result)
                         }
                     } else {
