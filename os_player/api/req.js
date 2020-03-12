@@ -59,51 +59,87 @@ router.get('/requestapi', function (req, res, next) {
     res.send(str)
 })
 
+router.post('/requestapi', function (req, res, next) {
+    // let msg_signature = req.params.msg_signature;
+    // let echostr = urlencode.decode(req.query.echostr);
+    // let timestamp = req.query.timestamp;
+    // let nonce = req.query.nonce
+    // let str = verifyUrl(msg_signature, timestamp, nonce, echostr)
+
+    console.log(req.params)
+    res.send()
+})
+
 
 function verifyUrl(msg_signature, timestamp, nonce, echostr) {
     if (encodingAesKey.length != 43) {
         return "false"
     }
     let sha1 = crypto.createHash('sha1')
-
     let params = [token, timestamp, nonce, echostr]
-
     params.sort()
-
     let d1 = sha1.update(params[0] + params[1] + params[2] + params[3]).digest("hex")
-
-    
-
-
     if (d1 != msg_signature) {
         return "false"
     } else {
-        //对密文进行base64解码        
-        return _decode(Buffer.from(echostr, 'base64'))        
+        //获取aeskey          
+        let aesKey = Buffer.from(encodingAesKey + '=', 'base64');
+        //获得初始向量
+        let iv = aesKey.slice(0, 16)
+        //构造解密函数
+        let aesCipher = require("crypto").createDecipheriv("aes-256-cbc", aesKey, iv);
+        aesCipher.setAutoPadding(false);
+        let decipheredBuff = Buffer.concat([aesCipher.update(echostr, 'base64'), aesCipher.final()]);
+        var pad = decipheredBuff[decipheredBuff.length - 1];
+        if (pad < 1 || pad > 32) {
+            pad = 0;
+        }
+        decipheredBuff.slice(0, decipheredBuff.length - pad);
+        //去掉前16位
+        let len_netOrder_corpid = decipheredBuff.slice(16);
+        //计算4位msg_len
+        let msg_len = len_netOrder_corpid.slice(0, 4).readUInt32BE(0);
+        //获得明文
+        let result = len_netOrder_corpid.slice(4, msg_len + 4).toString();
+        return result;
     }
 }
 
-function _decode(data) {
-    let aesKey = Buffer.from(encodingAesKey + '=', 'base64');
-    let aesCipher = require("crypto").createDecipheriv("aes-256-cbc", aesKey, aesKey.slice(0, 16));
-    aesCipher.setAutoPadding(false);
-    let decipheredBuff = Buffer.concat([aesCipher.update(data, 'base64'), aesCipher.final()]);
-    decipheredBuff = PKCS7Decoder(decipheredBuff);
-    let len_netOrder_corpid = decipheredBuff.slice(16);
-    let msg_len = len_netOrder_corpid.slice(0, 4).readUInt32BE(0);
-    const result = len_netOrder_corpid.slice(4, msg_len + 4).toString();
-    return result; // 返回一个解密后的明文-
+function encryptMsg(msg_signature, timestamp, nonce, echostr) {
+
 }
 
-function PKCS7Decoder (buff) 
-{
-    var pad = buff[buff.length - 1];
-    if (pad < 1 || pad > 32) {
-      pad = 0;
-    }
-    return buff.slice(0, buff.length - pad);
+// 消息加密
+function encryptMsg(replyMsg) {
+    let aesKey = Buffer.from( encodingAesKey+ '=', 'base64');
+    let iv = aesKey.slice(0, 16)
+    var random16 = require("crypto").pseudoRandomBytes(16);
+    var msg = new Buffer(replyMsg);
+    var msgLength = new Buffer(4);
+    msgLength.writeUInt32BE(msg.length, 0);
+    var corpid = new Buffer(recieveid);
+    var rawMsg = Buffer.concat([random16, msgLength, msg, corpid]);
+    var cipher = require("crypto").createCipheriv('aes-256-cbc', aesKey, iv);
+    var cipheredMsg = Buffer.concat([cipher.update(rawMsg), cipher.final()]);
+    var encrypt = cipheredMsg.toString('base64');
+
+    var nonce = parseInt((Math.random() * 10000000000), 10);
+    var time = timestamp();
+
+    var msgsignature = getSignature(time, nonce, encrypt);
+    // 标准回包
+    var resXml = `<xml><Encrypt><![CDATA[${encrypt}]]></Encrypt><MsgSignature><![CDATA[${msgsignature}]]></MsgSignature><TimeStamp>${time}</TimeStamp><Nonce><![CDATA[${nonce}]]><Nonce></xml>`;
+
+    return resXml;
 }
 
+function getSignature(timestamp, nonce, echostr) {
+    let sha1 = crypto.createHash('sha1')
+    let params = [token, timestamp, nonce, echostr]
+    params.sort()
+    let d1 = sha1.update(params[0] + params[1] + params[2] + params[3]).digest("hex")
+    return d1
+}
 
 
 module.exports = router
