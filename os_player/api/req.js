@@ -73,16 +73,18 @@ router.post('/requestapi', function (req, res, next) {
         req.rawBody += chunk;
     });
     req.on('end', function () {
-        json = xml2js.parseString(req.rawBody,  {explicitArray : false}, function(err, json) {
-            console.log(json)
-        })
-        
-        // res.send(JSON.stringify(json));
-    });
-
-    // let str = verifyUrl(msg_signature, timestamp, nonce, postData)
-    
-    res.send()
+        xml2js.parseString(req.rawBody,  {explicitArray : false}, function(err, xmlmsg) {
+            console.log(xmlmsg)
+            let d1 = getSignature(timestamp,nonce,xmlmsg.Encrypt)
+            if (d1 != msg_signature){
+                res.send("false")
+                console.log(false)
+            }else{
+                res.send()
+                console.log(true)
+            }
+        })        
+    });    
 })
 
 
