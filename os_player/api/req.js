@@ -74,17 +74,14 @@ router.post('/requestapi', function (req, res, next) {
     });
     req.on('end', function () {
         xml2js.parseString(req.rawBody,  {explicitArray : false}, function(err, xmlmsg) {
-            console.log(xmlmsg)
-            let d1 = getSignature(timestamp,nonce,xmlmsg.xml.Encrypt)
-            console.log(xmlmsg.xml.Encrypt)
-            console.log(d1)
-            console.log(msg_signature)
+            let echostr = xmlmsg.xml.Encrypt
+            let d1 = getSignature(timestamp,nonce,echostr)
             if (d1 != msg_signature){
                 res.send("false")
                 console.log(false)
             }else{
                 res.send()
-                console.log(true)
+                console.log(decryptStr(echostr))
             }
         })        
     });    
@@ -100,27 +97,31 @@ function verifyUrl(msg_signature, timestamp, nonce, echostr) {
     if (d1 != msg_signature) {
         return "false"
     } else {
-        //获取aeskey          
-        let aesKey = Buffer.from(encodingAesKey + '=', 'base64');
-        //获得初始向量
-        let iv = aesKey.slice(0, 16)
-        //构造解密函数
-        let aesCipher = require("crypto").createDecipheriv("aes-256-cbc", aesKey, iv);
-        aesCipher.setAutoPadding(false);
-        let decipheredBuff = Buffer.concat([aesCipher.update(echostr, 'base64'), aesCipher.final()]);
-        var pad = decipheredBuff[decipheredBuff.length - 1];
-        if (pad < 1 || pad > 32) {
-            pad = 0;
-        }
-        decipheredBuff.slice(0, decipheredBuff.length - pad);
-        //去掉前16位
-        let len_netOrder_corpid = decipheredBuff.slice(16);
-        //计算4位msg_len
-        let msg_len = len_netOrder_corpid.slice(0, 4).readUInt32BE(0);
-        //获得明文
-        let result = len_netOrder_corpid.slice(4, msg_len + 4).toString();
-        return result;
+        return decryptStr(echostr)
     }
+}
+
+function decryptStr(echostr){
+    //获取aeskey          
+    let aesKey = Buffer.from(encodingAesKey + '=', 'base64');
+    //获得初始向量
+    let iv = aesKey.slice(0, 16)
+    //构造解密函数
+    let aesCipher = require("crypto").createDecipheriv("aes-256-cbc", aesKey, iv);
+    aesCipher.setAutoPadding(false);
+    let decipheredBuff = Buffer.concat([aesCipher.update(echostr, 'base64'), aesCipher.final()]);
+    var pad = decipheredBuff[decipheredBuff.length - 1];
+    if (pad < 1 || pad > 32) {
+        pad = 0;
+    }
+    decipheredBuff.slice(0, decipheredBuff.length - pad);
+    //去掉前16位
+    let len_netOrder_corpid = decipheredBuff.slice(16);
+    //计算4位msg_len
+    let msg_len = len_netOrder_corpid.slice(0, 4).readUInt32BE(0);
+    //获得明文
+    let result = len_netOrder_corpid.slice(4, msg_len + 4).toString();
+    return result;
 }
 
 function decryptMsg(msg_signature, timestamp, nonce, echostr) {
