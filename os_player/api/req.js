@@ -76,6 +76,9 @@ router.post('/requestapi', function (req, res, next) {
         xml2js.parseString(req.rawBody,  {explicitArray : false}, function(err, xmlmsg) {
             console.log(xmlmsg)
             let d1 = getSignature(timestamp,nonce,xmlmsg.Encrypt)
+            console.log(xmlmsg.Encrypt)
+            console.log(d1)
+            console.log(msg_signature)
             if (d1 != msg_signature){
                 res.send("false")
                 console.log(false)
