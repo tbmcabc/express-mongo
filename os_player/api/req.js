@@ -73,6 +73,7 @@ router.post('/requestapi', function (req, res, next) {
         req.rawBody += chunk;
     });
     req.on('end', function () {
+        console.log(req.rawBody)
         xml2js.parseString(req.rawBody, {
             explicitArray: false
         }, function (err, xmlmsg) {
