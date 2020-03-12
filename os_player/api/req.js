@@ -60,11 +60,12 @@ router.get('/requestapi', function (req, res, next) {
 })
 
 router.post('/requestapi', function (req, res, next) {
-    let msg_signature = req.params.msg_signature;
-    let postData = req.params.postData;
-    let timestamp = req.params.timestamp;
-    let nonce = req.params.nonce
-    console.log(req)
+    let msg_signature = req.query.msg_signature;
+    let postData = req.body.postData;
+    let timestamp = req.query.timestamp;
+    let nonce = req.query.nonce
+    console.log(req.query)
+    console.log(req.body)
     // let str = verifyUrl(msg_signature, timestamp, nonce, postData)
 
     // console.log(str)

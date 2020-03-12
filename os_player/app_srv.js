@@ -25,6 +25,9 @@ var app = express();
 // app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 3000);
 app.use(require('body-parser')());
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());//数据JSON类型
+app.use(bodyParser.urlencoded({ extended: false }));//解析post请求数据
 
 app.use(require('express-logger')({
     path: __dirname + '/log/request.log'
