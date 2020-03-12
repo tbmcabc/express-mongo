@@ -94,16 +94,31 @@ router.post('/requestapi', function (req, res, next) {
                         msg = realmsg.xml;
                         res.type('text/xml')
                         console.log(msg.Content)
+                        var resXml
                         if (msg.Content == "排班") {
-                            let result = encryptMsg("你好")
-                            console.log(result)
-                            res.send(new Buffer(result))
+                            resXml = `<xml>
+                                <ToUserName><![CDATA[${msg.ToUserName}]]></ToUserName>
+                                <FromUserName><![CDATA[${msg.FromUserName}]]></FromUserName>
+                                <CreateTime>${Date.now()}</CreateTime>
+                                <MsgType><![CDATA[${msg.MsgType}]]><MsgType>
+                                <Content><![CDATA[${"66666666"}]]><Content>
+                                <MsgId><![CDATA[${msg.MsgId}]]><MsgId>
+                                <AgentID><![CDATA[${msg.AgentID}]]><AgentID>
+                            </xml>`;
                         } else {
-                            let result = encryptMsg("我好")
-                            console.log(result)
-                            res.send(new Buffer(result))
-                            
+                            resXml = `<xml>
+                                <ToUserName><![CDATA[${msg.ToUserName}]]></ToUserName>
+                                <FromUserName><![CDATA[${msg.FromUserName}]]></FromUserName>
+                                <CreateTime>${Date.now()}</CreateTime>
+                                <MsgType><![CDATA[${msg.MsgType}]]><MsgType>
+                                <Content><![CDATA[${"777777"}]]><Content>
+                                <MsgId><![CDATA[${msg.MsgId}]]><MsgId>
+                                <AgentID><![CDATA[${msg.AgentID}]]><AgentID>
+                            </xml>`;
                         }
+                        let result = encryptMsg(resXml)
+                        console.log(result)
+                        res.send(result)
                     } else {
                         res.send()
                         console.log(false + '3')
