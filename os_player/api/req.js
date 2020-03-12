@@ -8,6 +8,8 @@ let token = "VPG6WzQ1pviIxkf97vxCZoxWvl7puV";
 const aesutil = require('../../utils/aesutil')
 var CryptoJS = require('crypto-js')
 var Base64 = require('../../utils/base64')
+var xml2js = require('xml2js');
+
 
 
 router.get('/c2s_request', function (req, res, next) {
@@ -60,15 +62,26 @@ router.get('/requestapi', function (req, res, next) {
 })
 
 router.post('/requestapi', function (req, res, next) {
-    let msg_signature = req.query.msg_signature;
-    let postData = req.body.postData;
+    let msg_signature = req.query.msg_signature;    
     let timestamp = req.query.timestamp;
     let nonce = req.query.nonce
-    console.log(req.query)
-    console.log(req.body)
-    // let str = verifyUrl(msg_signature, timestamp, nonce, postData)
+    console.log(req.query)    
+    req.rawBody = ''; //添加接收变量
+    var json = {};
+    req.setEncoding('utf8');
+    req.on('data', function (chunk) {
+        req.rawBody += chunk;
+    });
+    req.on('end', function () {
+        json = xml2js.parseString(req.rawBody,  {explicitArray : false}, function(err, json) {
+            console.log(json)
+        })
+        
+        // res.send(JSON.stringify(json));
+    });
 
-    // console.log(str)
+    // let str = verifyUrl(msg_signature, timestamp, nonce, postData)
+    
     res.send()
 })
 
