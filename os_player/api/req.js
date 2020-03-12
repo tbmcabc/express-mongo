@@ -60,18 +60,51 @@ router.get('/requestapi', function (req, res, next) {
 })
 
 router.post('/requestapi', function (req, res, next) {
-    // let msg_signature = req.params.msg_signature;
-    // let echostr = urlencode.decode(req.query.echostr);
-    // let timestamp = req.query.timestamp;
-    // let nonce = req.query.nonce
-    // let str = verifyUrl(msg_signature, timestamp, nonce, echostr)
+    let msg_signature = req.params.msg_signature;
+    let postData = req.params.postData;
+    let timestamp = req.params.timestamp;
+    let nonce = req.params.nonce
+    console.log(req)
+    // let str = verifyUrl(msg_signature, timestamp, nonce, postData)
 
-    console.log(req.body)
+    // console.log(str)
     res.send()
 })
 
 
+
 function verifyUrl(msg_signature, timestamp, nonce, echostr) {
+    if (encodingAesKey.length != 43) {
+        return "false"
+    }
+    let d1 = getSignature(timestamp, nonce, echostr);
+    if (d1 != msg_signature) {
+        return "false"
+    } else {
+        //获取aeskey          
+        let aesKey = Buffer.from(encodingAesKey + '=', 'base64');
+        //获得初始向量
+        let iv = aesKey.slice(0, 16)
+        //构造解密函数
+        let aesCipher = require("crypto").createDecipheriv("aes-256-cbc", aesKey, iv);
+        aesCipher.setAutoPadding(false);
+        let decipheredBuff = Buffer.concat([aesCipher.update(echostr, 'base64'), aesCipher.final()]);
+        var pad = decipheredBuff[decipheredBuff.length - 1];
+        if (pad < 1 || pad > 32) {
+            pad = 0;
+        }
+        decipheredBuff.slice(0, decipheredBuff.length - pad);
+        //去掉前16位
+        let len_netOrder_corpid = decipheredBuff.slice(16);
+        //计算4位msg_len
+        let msg_len = len_netOrder_corpid.slice(0, 4).readUInt32BE(0);
+        //获得明文
+        let result = len_netOrder_corpid.slice(4, msg_len + 4).toString();
+        return result;
+    }
+}
+
+function decryptMsg(msg_signature, timestamp, nonce, echostr) {
     if (encodingAesKey.length != 43) {
         return "false"
     }
@@ -105,13 +138,9 @@ function verifyUrl(msg_signature, timestamp, nonce, echostr) {
     }
 }
 
-function encryptMsg(msg_signature, timestamp, nonce, echostr) {
-
-}
-
 // 消息加密
 function encryptMsg(replyMsg) {
-    let aesKey = Buffer.from( encodingAesKey+ '=', 'base64');
+    let aesKey = Buffer.from(encodingAesKey + '=', 'base64');
     let iv = aesKey.slice(0, 16)
     var random16 = require("crypto").pseudoRandomBytes(16);
     var msg = new Buffer(replyMsg);
