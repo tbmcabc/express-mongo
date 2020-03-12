@@ -66,7 +66,7 @@ router.post('/requestapi', function (req, res, next) {
     // let nonce = req.query.nonce
     // let str = verifyUrl(msg_signature, timestamp, nonce, echostr)
 
-    console.log(req.params)
+    console.log(req.body)
     res.send()
 })
 
