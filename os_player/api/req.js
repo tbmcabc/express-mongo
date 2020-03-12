@@ -3,8 +3,8 @@ var urlencode = require('urlencode')
 var crypto = require('crypto')
 let router = express.Router();
 let recieveid = "ww0d1c5329d824145e"
-let encodingAesKey = "BkkFobAFthA5mU8gfRnMvMBRUMuLRvSybQMNi7fo7IO";
-let token = "RcCeXOhFuQ76AC9HlyWXiTBioampfa";
+let encodingAesKey = "aszrgmMaa9UVZdluGbgJPqXqNnFO6xabTKIJrXRCQPr";
+let token = "VPG6WzQ1pviIxkf97vxCZoxWvl7puV";
 const aesutil = require('../../utils/aesutil')
 var CryptoJS = require('crypto-js')
 var Base64 = require('../../utils/base64')
@@ -50,11 +50,7 @@ router.get('/c2s_redisget', function (req, res, next) {
 
 router.get('/requestapi', function (req, res, next) {
     let msg_signature = req.query.msg_signature;
-    let echostr1 = urlencode.decode(req.query.echostr);
-    let echostr = req.query.echostr;
-    console.log(echostr)
-    console.log(echostr1)
-
+    let echostr = urlencode.decode(req.query.echostr);
     let timestamp = req.query.timestamp;
     let nonce = req.query.nonce
     let str = verifyUrl(msg_signature, timestamp, nonce, echostr)
@@ -65,59 +61,39 @@ router.get('/requestapi', function (req, res, next) {
 
 
 function verifyUrl(msg_signature, timestamp, nonce, echostr) {
-    // console.log(encodingAesKey.length)
     if (encodingAesKey.length != 43) {
         return "false"
     }
     let sha1 = crypto.createHash('sha1')
 
-    let params = [token,timestamp,nonce,echostr]
-    // console.log(params)
+    let params = [token, timestamp, nonce, echostr]
+
     params.sort()
-    // console.log(params)
-    let d1 = sha1.update(params[0]+params[1]+params[2]+params[3]).digest("hex")
-    // // let key = Base64.decode(encodingAesKey +"=")
-    // let base64 = new Base64()
 
-    // // 密钥 32 位
-    let aeskey  = Buffer.from(encodingAesKey + '=',"base64")
-    let s =  aeskey
-    // console.log(s)
-    // console.log(s.length)
-    // // // 初始向量 initial vector 16 位
-    let iv  = s.slice(0,16)
+    let d1 = sha1.update(params[0] + params[1] + params[2] + params[3]).digest("hex")
 
-    // console.log(echostr)
+    let result = _decode(Buffer.from(echostr, 'base64'))
 
-    
-
-    let encryptedText =Buffer.from(echostr,'base64');
-
-    // let decipher =crypto.createDecipheriv('aes-256-cbc',aeskey, iv);
-
-    // let decrypted =decipher.update(encryptedText);
-
-    // decrypted =Buffer.concat([decrypted,decipher.final()]);
-
-     
-    //解密
-    var decrypted = CryptoJS.AES.decrypt(encryptedText, aeskey, {
-        iv: iv,
-        mode: CryptoJS.mode.CBC,
-        padding: CryptoJS.pad.Pkcs7
-    });
-     
-    console.log(decrypted)
-    // // 转换为 utf8 字符串
-    // decrypted = aesutil.decryption(echostr,key1,'')
-    // console.log("加密的结果：" + d1)
-    if(d1 != msg_signature){
+    console.log(result)
+    if (d1 != msg_signature) {
         return "false"
-    }else{
+    } else {
         //对密文进行base64解码
         return "true"
     }
     return "newEchostr"
+}
+
+function _decode(data) {
+    let aesKey = Buffer.from(encodingAesKey + '=', 'base64');
+    let aesCipher = require("crypto").createDecipheriv("aes-256-cbc", aesKey, aesKey.slice(0, 16));
+    aesCipher.setAutoPadding(false);
+    let decipheredBuff = Buffer.concat([aesCipher.update(data, 'base64'), aesCipher.final()]);
+    decipheredBuff = PKCS7Decoder(decipheredBuff);
+    let len_netOrder_corpid = decipheredBuff.slice(16);
+    let msg_len = len_netOrder_corpid.slice(0, 4).readUInt32BE(0);
+    const result = len_netOrder_corpid.slice(4, msg_len + 4).toString();
+    return result; // 返回一个解密后的明文-
 }
 
 
