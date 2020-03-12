@@ -72,16 +72,15 @@ function verifyUrl(msg_signature, timestamp, nonce, echostr) {
 
     let d1 = sha1.update(params[0] + params[1] + params[2] + params[3]).digest("hex")
 
-    let result = _decode(Buffer.from(echostr, 'base64'))
+    
 
-    console.log(result)
+
     if (d1 != msg_signature) {
         return "false"
     } else {
-        //对密文进行base64解码
-        return "true"
+        //对密文进行base64解码        
+        return _decode(Buffer.from(echostr, 'base64'))        
     }
-    return "newEchostr"
 }
 
 function _decode(data) {
@@ -94,6 +93,15 @@ function _decode(data) {
     let msg_len = len_netOrder_corpid.slice(0, 4).readUInt32BE(0);
     const result = len_netOrder_corpid.slice(4, msg_len + 4).toString();
     return result; // 返回一个解密后的明文-
+}
+
+function PKCS7Decoder (buff) 
+{
+    var pad = buff[buff.length - 1];
+    if (pad < 1 || pad > 32) {
+      pad = 0;
+    }
+    return buff.slice(0, buff.length - pad);
 }
 
 
