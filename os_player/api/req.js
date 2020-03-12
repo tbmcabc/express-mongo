@@ -80,8 +80,10 @@ router.post('/requestapi', function (req, res, next) {
                 res.send("false")
                 console.log(false)
             }else{
-                res.send()
-                console.log(decryptStr(echostr))
+                res.send()                
+                xml2js.parseString(decryptStr(echostr),  {explicitArray : false}, function(err, realmsg) {
+                    console.log(realmsg)
+                })
             }
         })        
     });    
