@@ -97,8 +97,8 @@ router.post('/requestapi', function (req, res, next) {
                         var resXml
                         if (msg.Content == "排班") {
                             resXml = `<xml>
-                            <ToUserName><![CDATA[${msg.ToUserName}]]></ToUserName>
-                            <FromUserName><![CDATA[${msg.FromUserName}]]></FromUserName>
+                            <ToUserName><![CDATA[${msg.FromUserName}]]></ToUserName>
+                            <FromUserName><![CDATA[${msg.ToUserName}]]></FromUserName>
                             <CreateTime>${Date.now()}</CreateTime>
                             <MsgType><![CDATA[${msg.MsgType}]]><MsgType>
                             <Content><![CDATA[${"666666666"}]]><Content>
@@ -107,8 +107,8 @@ router.post('/requestapi', function (req, res, next) {
                             </xml>`;
                         } else {
                             resXml = `<xml>
-                                <ToUserName><![CDATA[${msg.ToUserName}]]></ToUserName>
-                                <FromUserName><![CDATA[${msg.FromUserName}]]></FromUserName>
+                                <ToUserName><![CDATA[${msg.FromUserName}]]></ToUserName>
+                                <FromUserName><![CDATA[${msg.ToUserName}]]></FromUserName>
                                 <CreateTime>${Date.now()}</CreateTime>
                                 <MsgType><![CDATA[${msg.MsgType}]]><MsgType>
                                 <Content><![CDATA[${"777777"}]]><Content>
